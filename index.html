@@ -19,11 +19,19 @@
         }
 
         .container {
-            max-width: 400px;
-            margin: 0 auto;
+            max-width: 100%;
+            margin: 0;
             background: white;
             min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: none;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 400px;
+                margin: 0 auto;
+                box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            }
         }
 
         .header {
@@ -454,18 +462,31 @@
             chartData.push(newValue);
             baseChartValue = newValue; // Update base for next iteration
             
-            // Update time labels
+            // Update time labels with current time
+            updateTimeLabels();
+            
+            chart.data.labels = timeLabels;
+            chart.data.datasets[0].data = chartData;
+            chart.update('none');
+        }
+
+        // Update time labels continuously
+        function updateTimeLabels() {
             const currentTime = new Date();
             const minutes = currentTime.getMinutes();
             const hours = currentTime.getHours();
             const ampm = hours >= 12 ? 'PM' : 'AM';
             const displayHours = hours % 12 || 12;
             
+            // Shift and add new time
             timeLabels.shift();
             timeLabels.push(`${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`);
-            
+        }
+
+        // Update chart time labels every second
+        function updateChartTime() {
+            updateTimeLabels();
             chart.data.labels = timeLabels;
-            chart.data.datasets[0].data = chartData;
             chart.update('none');
         }
 
@@ -497,6 +518,7 @@
             // Set up intervals
             setInterval(updateActiveUsers, 7000); // Every 7 seconds
             setInterval(updateEarnings, 2000); // Every 2 seconds (chart updates at same time)
+            setInterval(updateChartTime, 1000); // Every 1 second for time labels
         });
     </script>
 </body>
