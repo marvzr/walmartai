@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WalmartAI Earnings Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0071ce, #004c91);
+            padding: 20px 0;
+            text-align: center;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .ai-gradient {
+            background: linear-gradient(45deg, #FFFFFF, #FFD700, #FF4081, #00FFFF, #FF6B35, #32CD32, #FF1493, #FFFF00, #FF8C00, #00FF7F);
+            background-size: 500% 500%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 1.5s ease-in-out infinite;
+            font-weight: 900;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 100% 0%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .wave-icon {
+            font-size: 24px;
+            margin-left: 8px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .datetime-banner {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #0071ce;
+            font-weight: 500;
+        }
+
+        .calendar-icon {
+            font-size: 18px;
+        }
+
+        .main-profit-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profit-label {
+            color: #6c757d;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .profit-amount {
+            font-size: 64px;
+            font-weight: bold;
+            color: #0071ce;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .earnings-increase {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #0071ce;
+            font-size: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(0);
+            pointer-events: none;
+            animation: fadeUpOut 2s ease-out forwards;
+        }
+
+        @keyframes fadeUpOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+        }
+
+        .middle-section {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .daily-revenue-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .revenue-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #0071ce;
+            font-weight: 600;
+        }
+
+        .revenue-amount {
+            font-size: 36px;
+            font-weight: bold;
+            color: #0071ce;
+            margin-bottom: 8px;
+        }
+
+        .revenue-status {
+            color: #0071ce;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            position: relative;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .chart-period {
+            background: #e8f4ff;
+            color: #0071ce;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .daily-profit-section {
+            background: linear-gradient(135deg, #0071ce, #004c91);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .export-icon {
+            background: rgba(255,255,255,0.1);
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .export-icon:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .profit-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .profit-table th {
+            text-align: left;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-weight: 500;
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .profit-table td {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #FFC220;
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-paid {
+            background: #0071ce;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .cashout-btn {
+            background: linear-gradient(135deg, #FFC220, #FFD700);
+            color: #333;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .cashout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 194, 32, 0.3);
+        }
+
+        /* Active users card */
+        .active-users-card {
+            background: #FFC220;
+            color: #333;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .user-count {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .middle-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .profit-amount {
+                font-size: 48px;
+            }
+            
+            .logo {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            Walmart<span class="ai-gradient">AI</span>
+            <span class="wave-icon">📊</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="datetime-banner">
+            <span class="calendar-icon">📅</span>
+            <span id="currentDateTime">Saturday, June 21, 2025 at 10:19 PM</span>
+        </div>
+
+        <div class="main-profit-card">
+            <div class="profit-label">Current Profit</div>
+            <div class="profit-amount" id="mainProfit">$3,508.27</div>
+        </div>
+
+        <div class="middle-section">
+            <div>
+                <div class="daily-revenue-card">
+                    <div class="revenue-header">
+                        <span>💰</span>
+                        <span>Daily Revenue</span>
+                    </div>
+                    <div class="revenue-amount" id="dailyRevenue">$698.00</div>
+                    <div class="revenue-status">
+                        <span>↗</span>
+                        <span>Updated in real-time</span>
+                    </div>
+                </div>
+
+                <div class="active-users-card">
+                    <div>👥 Active Users</div>
+                    <div class="user-count" id="activeUsers">329</div>
+                </div>
+
+                <button class="cashout-btn" onclick="handleCashout()">
+                    💰 CASHOUT NOW
+                </button>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Profit Trend</div>
+                    <div class="chart-period">Last 7 Days</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="profitChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="daily-profit-section">
+            <div class="section-header">
+                <div class="section-title">Daily Profit</div>
+                <div class="export-icon">📊</div>
+            </div>
+            
+            <table class="profit-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Profit</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="profitTableBody">
+                    <tr>
+                        <td>Sat, Jun 21</td>
+                        <td id="todayProfit">$198.00</td>
+                        <td><span class="status-pending">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>Fri, Jun 20</td>
+                        <td>$510.00</td>
+                        <td><span class="status-paid">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>Thu, Jun 19</td>
+                        <td>$525.00</td>
+                        <td><span class="status-paid">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>Wed, Jun 18</td>
+                        <td>$420.00</td>
+                        <td><span class="status-paid">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>Tue, Jun 17</td>
+                        <td>$355.00</td>
+                        <td><span class="status-paid">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>Mon, Jun 16</td>
+                        <td>$380.00</td>
+                        <td><span class="status-paid">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>Sun, Jun 15</td>
+                        <td>$445.00</td>
+                        <td><span class="status-paid">Paid</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Initialize variables
+        let activeUsers = 329;
+        let currentProfit = 3508.27;
+        let dailyRevenue = 698.00;
+        let todayProfit = 198.00;
+        let chart;
+
+        // Format number with commas
+        function formatNumber(num) {
+            return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // Update current date and time
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('en-US', options) + ' at ' + now.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true});
+        }
+
+        // Show earnings increase animation
+        function showEarningsIncrease(amount) {
+            const profitCard = document.querySelector('.main-profit-card');
+            const increaseElement = document.createElement('div');
+            increaseElement.className = 'earnings-increase';
+            increaseElement.textContent = `+$${formatNumber(amount)}`;
+            
+            profitCard.appendChild(increaseElement);
+            
+            setTimeout(() => {
+                if (profitCard.contains(increaseElement)) {
+                    profitCard.removeChild(increaseElement);
+                }
+            }, 2000);
+        }
+
+        // Initialize chart
+        function initChart() {
+            const ctx = document.getElementById('profitChart').getContext('2d');
+            
+            const chartData = [430, 445, 380, 355, 420, 525, 510];
+            const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: chartData,
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#28a745',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#666',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            display: false,
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverRadius: 8
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update active users
+        function updateActiveUsers() {
+            const increase = Math.floor(Math.random() * 3) + 1;
+            activeUsers += increase;
+            document.getElementById('activeUsers').textContent = activeUsers.toLocaleString();
+        }
+
+        // Update profits
+        function updateProfits() {
+            const increase = Math.random() * 15 + 5;
+            currentProfit += increase;
+            dailyRevenue += increase * 0.3;
+            todayProfit += increase * 0.2;
+            
+            document.getElementById('mainProfit').textContent = `$${formatNumber(currentProfit)}`;
+            document.getElementById('dailyRevenue').textContent = `$${formatNumber(dailyRevenue)}`;
+            document.getElementById('todayProfit').textContent = `$${formatNumber(todayProfit)}`;
+            
+            showEarningsIncrease(increase);
+        }
+
+        // Handle cashout
+        function handleCashout() {
+            alert(`🎉 Processing cashout of $${formatNumber(currentProfit)}!\n\nFunds will be transferred to your account within 24 hours.`);
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            initChart();
+            
+            // Set up intervals
+            setInterval(updateDateTime, 1000);
+            setInterval(updateActiveUsers, 8000);
+            setInterval(updateProfits, 3000);
+        });
+    </script>
+</body>
+</html>
